@@ -2,9 +2,12 @@ package com.site.sss.question;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import com.site.sss.answer.Answer;
 import jakarta.persistence.*;
+import jakarta.persistence.ManyToOne;
+import com.site.sss.user.SiteUser;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +30,14 @@ public class Question {
 
     private LocalDateTime createDate;
 
-    @OneToMany(mappedBy = "qusetion", cascade = CascadeType.REMOVE)
+    private LocalDateTime modifyDate;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
     private List<Answer> answerList;
+
+    @ManyToOne
+    private SiteUser author;
+
+    @ManyToMany
+    Set<SiteUser> voter;
 }
