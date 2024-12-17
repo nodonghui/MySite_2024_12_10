@@ -1,5 +1,10 @@
 package com.site.sss.question;
 
+import com.site.sss.Comment.AnswerComment.AnswerComment;
+import com.site.sss.Comment.AnswerComment.AnswerCommentService;
+import com.site.sss.Comment.CommentForm;
+import com.site.sss.Comment.QuestionComment.QuestionComment;
+import com.site.sss.Comment.QuestionComment.QuestionCommentService;
 import com.site.sss.answer.Answer;
 import com.site.sss.answer.AnswerForm;
 import com.site.sss.answer.AnswerService;
@@ -18,6 +23,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 
 @RequestMapping("/question")
@@ -28,6 +34,8 @@ public class QuestionController {
     private final QuestionService questionService;
     private final UserService userService;
     private final AnswerService answerService;
+    private final QuestionCommentService questionCommentService;
+    private final AnswerCommentService answerCommentService;
 
     @GetMapping("/list")
     public String list(Model model,@RequestParam(value="page",defaultValue = "0") int page
@@ -42,13 +50,19 @@ public class QuestionController {
     //기본적으로 value 초기화, 생략가능함
     //url 패턴을 설정하기 위해 사용
     @GetMapping(value="/detail/{id}")
-    public String detail(Model model, @PathVariable("id") Integer id,AnswerForm answerForm
-                         ,@RequestParam(value="page",defaultValue = "0") int page) {
+    public String detail(Model model, @PathVariable("id") Integer id, AnswerForm answerForm
+                         , CommentForm questionCommentForm, CommentForm answerCommentForm
+                         , @RequestParam(value="page",defaultValue = "0") int page) {
 
         Question question = this.questionService.getQuestion(id);
-        Page<Answer> paging= answerService.getList(question,page);
+        Page<Answer> answerPaging= answerService.getList(question,page);
+
+        //question 내 answer의 모든 댓글을 가져온다 answer id -> answerComment 리스트 맵핑
+        List<List<AnswerComment>> answerCommentList=answerCommentService.getList(question,page);
+
         model.addAttribute("question",question);
-        model.addAttribute("paging",paging);
+        model.addAttribute("answerPaging",answerPaging);
+        model.addAttribute("answerCommentList",answerCommentList);
 
         return "question_detail";
     }
@@ -101,7 +115,7 @@ public class QuestionController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public String questionDelete(Principal principal, @PathVariable("id") Integer id) {
         Question question = this.questionService.getQuestion(id);
         if (!question.getAuthor().getUsername().equals(principal.getName())) {

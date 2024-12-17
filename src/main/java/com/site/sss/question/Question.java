@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import com.site.sss.Comment.QuestionComment.QuestionComment;
 import com.site.sss.answer.Answer;
 import jakarta.persistence.*;
 import jakarta.persistence.ManyToOne;
@@ -32,8 +33,11 @@ public class Question {
 
     private LocalDateTime modifyDate;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "question")
     private List<Answer> answerList;
+
+    @OneToMany(mappedBy = "question")
+    private List<QuestionComment> questionCommentList;
 
     @ManyToOne
     private SiteUser author;

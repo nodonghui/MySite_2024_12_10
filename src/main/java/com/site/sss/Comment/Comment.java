@@ -1,21 +1,19 @@
-package com.site.sss.answer;
+package com.site.sss.Comment;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-
-import com.site.sss.Comment.AnswerComment.AnswerComment;
-import com.site.sss.Comment.QuestionComment.QuestionComment;
+import com.site.sss.answer.Answer;
 import com.site.sss.question.Question;
 import com.site.sss.user.SiteUser;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+
 @Getter
 @Setter
-@Entity
-public class Answer {
+@MappedSuperclass
+public abstract class Comment {
 
     @Id
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
@@ -24,18 +22,12 @@ public class Answer {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    private  LocalDateTime createDate;
+    private LocalDateTime createDate;
 
     private LocalDateTime modifyDate;
 
     @ManyToOne
-    private Question question;
-
-    @ManyToOne
     private SiteUser author;
-
-    @OneToMany(mappedBy = "answer")
-    private List<AnswerComment> CommentList;
 
     @ManyToMany
     Set<SiteUser> voter;
