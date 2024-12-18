@@ -34,7 +34,7 @@ public class Answer {
     @ManyToOne
     private SiteUser author;
 
-    @OneToMany(mappedBy = "answer")
+    @OneToMany(mappedBy = "answer",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerComment> CommentList;
 
     @ManyToMany

@@ -1,11 +1,15 @@
 package com.site.sss.question;
 
+import com.site.sss.Category.Category;
+import com.site.sss.Category.CategoryRepository;
+import com.site.sss.Category.CategoryService;
 import com.site.sss.DataNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.site.sss.answer.Answer;
 import com.site.sss.user.SiteUser;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,24 +24,19 @@ import org.springframework.data.jpa.domain.Specification;
 
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 //롬북 코드 추가는 컴파일 바이트코드 레벨에서 진행됨 ast생성시 같이 생성되어 삽입
 //빈 같은 스프링은 실행 시점에 객체 주입. 주입받는 객체를 매개변수로 가지는 생성자를 통해 주입
 //롬북은 필요시 사용, 코드 줄일수 있 하지만 명시적으로 코드 보고 싶음 사용 x
 
-
+@RequiredArgsConstructor
 @Service
 public class QuestionService {
 
-    private final QuestionRepository questionRepository;
 
-    public QuestionService(QuestionRepository questionRepository) {
-        this.questionRepository=questionRepository;
-    }
+    private final QuestionRepository questionRepository;
 
     public Question getQuestion(Integer id) {
         Optional<Question> question = this.questionRepository.findById(id);
@@ -48,22 +47,35 @@ public class QuestionService {
         }
     }
 
-    public void create(String subject, String content, SiteUser user) {
+    public void create(String subject, String content, SiteUser user, Category category) {
         Question q=new Question();
         q.setContent(content);
         q.setSubject(subject);
         q.setCreateDate(LocalDateTime.now());
         q.setAuthor(user);
+        q.setCategory(category);
+
+
         this.questionRepository.save(q);
     }
 
-    public Page<Question> getList(int page,String kw) {
+    public Page<Question> getList(int page,String kw,Category category) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("createDate"));
         Pageable pageable = PageRequest.of(page,10,Sort.by(sorts));
 
-        Specification<Question> spec=search(kw);
+        Specification<Question> spec=search(kw)
+                .and(categoryEquals(category));
         return this.questionRepository.findAll(spec,pageable);
+    }
+
+    private Specification<Question> categoryEquals(Category category) {
+        return (root, query, criteriaBuilder) -> {
+            if (category == null) {
+                return null; // categoryId가 없으면 조건 추가 안함
+            }
+            return criteriaBuilder.equal(root.get("category"), category);
+        };
     }
 
     public void modify(Question question, String subject, String content) {
@@ -77,6 +89,9 @@ public class QuestionService {
         this.questionRepository.delete(question);
     }
 
+    public void deleteAll() {
+        this.questionRepository.deleteAll();
+    }
     public void vote(Question question, SiteUser siteUser) {
         question.getVoter().add(siteUser);
         this.questionRepository.save(question);
@@ -97,6 +112,8 @@ public class QuestionService {
                         cb.like(a.get("content"), "%" + kw + "%"),      // 답변 내용
                         cb.like(u2.get("username"), "%" + kw + "%"));   // 답변 작성자
             }
+
+
         };
     }
 }

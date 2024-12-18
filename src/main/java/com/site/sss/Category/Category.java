@@ -1,9 +1,13 @@
 package com.site.sss.Category;
 
+import com.site.sss.Comment.AnswerComment.AnswerComment;
 import com.site.sss.question.Question;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+
 
 @Entity
 @Setter
@@ -14,8 +18,10 @@ public class Category {
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
     private Integer id;
 
-    private String category;
+    @Column(nullable = false, unique = true)
+    private String name;
 
-    @OneToOne
-    private Question question;
+
+
+
 }

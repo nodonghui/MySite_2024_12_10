@@ -1,5 +1,8 @@
 package com.site.sss.question;
 
+import com.site.sss.Category.Category;
+import com.site.sss.Category.CategoryNum;
+import com.site.sss.Category.CategoryService;
 import com.site.sss.Comment.AnswerComment.AnswerComment;
 import com.site.sss.Comment.AnswerComment.AnswerCommentService;
 import com.site.sss.Comment.CommentForm;
@@ -36,13 +39,23 @@ public class QuestionController {
     private final AnswerService answerService;
     private final QuestionCommentService questionCommentService;
     private final AnswerCommentService answerCommentService;
+    private final CategoryService categoryService;
 
     @GetMapping("/list")
     public String list(Model model,@RequestParam(value="page",defaultValue = "0") int page
                         ,@RequestParam(value="kw",defaultValue = "") String kw) {
-        Page<Question> paging = this.questionService.getList(page,kw);
+
+        Category category =this.categoryService.getCategory(CategoryNum.QUESTION.getValue());
+        Page<Question> paging = this.questionService.getList(page,kw,category);
         model.addAttribute("paging",paging);
         model.addAttribute("kw",kw);
+        return "question_list";
+    }
+
+    @GetMapping("/deleteAll")
+    public String deleteAll() {
+        questionService.deleteAll();
+
         return "question_list";
     }
 
@@ -82,8 +95,9 @@ public class QuestionController {
         }
 
         SiteUser siteUser = this.userService.getUser(principal.getName());
+        Category category =this.categoryService.getCategory(CategoryNum.QUESTION.getValue());
 
-        this.questionService.create(questionForm.getSubject(), questionForm.getContent(),siteUser);
+        this.questionService.create(questionForm.getSubject(), questionForm.getContent(),siteUser,category);
         return "redirect:/question/list";
     }
 

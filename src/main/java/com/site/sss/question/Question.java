@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import com.site.sss.Category.Category;
 import com.site.sss.Comment.QuestionComment.QuestionComment;
 import com.site.sss.answer.Answer;
 import jakarta.persistence.*;
@@ -33,11 +34,14 @@ public class Question {
 
     private LocalDateTime modifyDate;
 
-    @OneToMany(mappedBy = "question")
+    @OneToMany(mappedBy = "question" ,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answerList;
 
-    @OneToMany(mappedBy = "question")
+    @OneToMany(mappedBy = "question" ,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionComment> questionCommentList;
+
+    @ManyToOne
+    private Category category;
 
     @ManyToOne
     private SiteUser author;
